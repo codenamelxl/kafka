@@ -47,7 +47,10 @@ case class LaunchConfig(
       val addr = bindAddress.resolve()
       result += ("host.name" -> addr)
       if (result.contains("listeners")) {
-        result += ("listeners" -> s"PLAINTEXT://$addr:${result("port")}")
+        var listenersStr = result.get("listeners").getOrElse(s"PLAINTEXT://$addr:${result("port")}")
+        
+        listenersStr = "([A-Z_]+://)(.*?)(:[0-9]+)".r.replaceAllIn(listenersStr, "$1" + new BindAddress("$2").resolve() +"$3")
+        result += ("listeners" -> listenersStr)
       }
     }
 
